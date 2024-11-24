@@ -56,8 +56,9 @@ namespace TS3AudioBot.Config
 		public ConfPath Media { get; } = Create<ConfPath>("media",
 			"The default path to look for local resources.");
 		public ConfResolverYoutube Youtube { get; } = Create<ConfResolverYoutube>("youtube");
+		public ConfResolverJellyfin Jellyfin { get; } = Create<ConfResolverJellyfin>("jellyfin");
 	}
-
+	
 	public class ConfResolverYoutube : ConfigTable
 	{
 		public ConfigValue<LoaderPriority> ResolverPriority { get; } = new ConfigValue<LoaderPriority>(
@@ -67,6 +68,16 @@ namespace TS3AudioBot.Config
 		public ConfigValue<string> ApiKey { get; } = new ConfigValue<string>("youtube_api_key", "",
 			"Set your own youtube api key to keep using the old youtube factory loader.\n" +
 			"This feature is unsupported and may break at any time");
+	}
+
+	public class ConfResolverJellyfin : ConfigTable
+	{
+		public ConfigValue<string> ApiKey { get; } = new ConfigValue<string>("jellyfin_api_key", "",
+			"Create a Jellyfin Api Key in the admin dashboard and put it here.");
+		public ConfigValue<string> LibraryId { get; } = new ConfigValue<string>("jellyfin_lib_id", "",
+			"The Library or parentId to be used (as shown in the jellyfin URL).");
+		public ConfigValue<string> Hostname { get; } = new ConfigValue<string>("jellyfin_host", "",
+			"Full hostname to the Jellyfin instance, i.e. https://media.my.service");
 	}
 
 	public class ConfTools : ConfigTable

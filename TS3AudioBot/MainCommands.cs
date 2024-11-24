@@ -9,7 +9,9 @@
 
 using CliWrap;
 using CliWrap.Buffered;
+using LiteDB.Shell;
 using Newtonsoft.Json.Linq;
+using NLog.Fluent;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -1198,6 +1200,24 @@ namespace TS3AudioBot
 		public static async Task CommandPlay(PlayManager playManager, InvokerData invoker, IAudioResourceResult rsc, params string[] attributes)
 			=> await playManager.Play(invoker, rsc.AudioResource, meta: PlayManager.ParseAttributes(attributes));
 
+		[Command("jelly auto")]
+		[Usage("jelly auto <query>", "Looks for a music resource on jellyfin and plays the first result")]
+		public static async void CommandJelly(PlayManager playManager, InvokerData invoker, ResolveContext ctx, ResourceResolver resourceResolver, params string[] parameter)
+		{
+			string query = String.Join(" ", parameter);
+
+			var resource = await resourceResolver.Load(ctx, query, "jellyfin");
+			await playManager.Play(invoker, resource.PlayUri);
+		}
+
+		[Command("jelly play")]
+		[Usage("jelly play <id>", "Plays a jellyfin resource based on the given MD5 ID")]
+		public static async void CommandJellyPlay(PlayManager playManager, InvokerData invoker, ResolveContext ctx, ResourceResolver resourceResolver, params string[] parameter)
+		{
+			var resource = await resourceResolver.Load(ctx, new AudioResource(parameter[0], null, "jellyfin"));
+			await playManager.Play(invoker, resource.PlayUri);
+		}
+
 		[Command("plugin list")]
 		public static JsonArray<PluginStatusInfo> CommandPluginList(PluginManager pluginManager, Bot? bot = null)
 			=> new JsonArray<PluginStatusInfo>(pluginManager.GetPluginOverview(bot), PluginManager.FormatOverview);
@@ -1231,7 +1251,7 @@ namespace TS3AudioBot
 				strb.Append(param);
 			return strb.ToString();
 		}
-
+		
 		[Command("quiz")]
 		public static JsonValue<bool> CommandQuiz(Bot bot) => new JsonValue<bool>(bot.QuizMode, string.Format(strings.info_status_quizmode, bot.QuizMode ? strings.info_on : strings.info_off));
 		[Command("quiz on")]

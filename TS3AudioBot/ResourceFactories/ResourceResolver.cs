@@ -33,6 +33,7 @@ namespace TS3AudioBot.ResourceFactories
 
 		public ResourceResolver(ConfFactories conf)
 		{
+			AddResolver(new JellyfinResolver(conf.Jellyfin));
 			AddResolver(new MediaResolver());
 			AddResolver(new YoutubeResolver(conf.Youtube));
 			AddResolver(new SoundcloudResolver());
