@@ -39,7 +39,6 @@ namespace TS3AudioBot.ResourceFactories
 		private readonly Regex JellyfinPlaylistRegex;
 
 		private string ApiKey => conf.ApiKey;
-		private string ParentId => conf.LibraryId;
 		private string Hostname => conf.Hostname;
 
 		public string ResolverFor => "jellyfin";
@@ -118,7 +117,39 @@ namespace TS3AudioBot.ResourceFactories
 
 		public async Task GetThumbnail(ResolveContext _, PlayResource playResource, Func<Stream, Task> action)
 		{
-			string imageUri = $"https://media.henke.gg/Items/{playResource.AudioResource.ResourceId}/Images/Primary?fillHeight=390&fillWidth=480&quality=96";
+			string albumTag = "";
+			string primaryImageTag = "";
+
+			if (playResource.AudioResource.AdditionalData == null)
+			{
+				// Fetch info manually
+				var apiUri = $"Items?IncludeItemTypes=Audio&Recursive=true&Limit=1&ids={playResource.AudioResource.ResourceId}";
+				var body = await this.GetApi(apiUri);
+				if (body != null)
+				{ 
+					var items = JsonConvert.DeserializeObject<JellyfinItemsResponse>(body);
+
+					if (items.Items.Count > 0)
+					{
+						albumTag = items.Items[0].AlbumId;
+						primaryImageTag = items.Items[0].AlbumPrimaryImageTag;
+					}
+					else
+						await action.Invoke(Stream.Null);
+				}
+				else
+					await action.Invoke(Stream.Null);
+			}
+			else
+			{
+
+				albumTag = playResource.AudioResource.AdditionalData.First(d => d.Key == "AlbumId").Value;
+				primaryImageTag = playResource.AudioResource.AdditionalData.First(d => d.Key == "ImageTag").Value;
+			}
+
+
+			string imageUri = $"https://media.henke.gg/Items/{albumTag}/Images/Primary?fillHeight=390&fillWidth=480&quality=96&tag={primaryImageTag}";
+
 			await WebWrapper.Request(imageUri).ToStream(action);
 		}
 
