@@ -1200,22 +1200,27 @@ namespace TS3AudioBot
 		public static async Task CommandPlay(PlayManager playManager, InvokerData invoker, IAudioResourceResult rsc, params string[] attributes)
 			=> await playManager.Play(invoker, rsc.AudioResource, meta: PlayManager.ParseAttributes(attributes));
 
-		[Command("jelly auto")]
-		[Usage("jelly auto <query>", "Looks for a music resource on jellyfin and plays the first result")]
-		public static async void CommandJelly(PlayManager playManager, InvokerData invoker, ResolveContext ctx, ResourceResolver resourceResolver, params string[] parameter)
+		[Command("jelly play")]
+		[Usage("jelly play <query>", "Looks for a music resource on jellyfin and plays the first result")]
+		public static async void CommandJellyAuto(PlayManager playManager, InvokerData invoker, ResolveContext ctx, ResourceResolver resourceResolver, params string[] parameter)
 		{
 			string query = String.Join(" ", parameter);
 
 			var resource = await resourceResolver.Load(ctx, query, "jellyfin");
-			await playManager.Play(invoker, resource.PlayUri);
+			await playManager.Play(invoker, resource);
 		}
 
-		[Command("jelly play")]
-		[Usage("jelly play <id>", "Plays a jellyfin resource based on the given MD5 ID")]
-		public static async void CommandJellyPlay(PlayManager playManager, InvokerData invoker, ResolveContext ctx, ResourceResolver resourceResolver, params string[] parameter)
+		[Command("jelly q")]
+		public static async void CommandJellyQ(PlayManager playManager, InvokerData invoker, ResolveContext ctx, ResourceResolver resourceResolver, params string[] parameter)
 		{
-			var resource = await resourceResolver.Load(ctx, new AudioResource(parameter[0], null, "jellyfin"));
-			await playManager.Play(invoker, resource.PlayUri);
+			var query = String.Join(" ", parameter);
+			var resources = await resourceResolver.Search(ctx, "jellyfin", query);
+
+			if (resources.Count < 1)
+				throw new CommandException($"Could not find a song for '{query}' in jellyfin");
+
+			var item = new PlaylistItem(resources.First());
+			await playManager.Enqueue(invoker, item);
 		}
 
 		[Command("plugin list")]

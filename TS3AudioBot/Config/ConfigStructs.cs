@@ -74,8 +74,6 @@ namespace TS3AudioBot.Config
 	{
 		public ConfigValue<string> ApiKey { get; } = new ConfigValue<string>("jellyfin_api_key", "",
 			"Create a Jellyfin Api Key in the admin dashboard and put it here.");
-		public ConfigValue<string> LibraryId { get; } = new ConfigValue<string>("jellyfin_lib_id", "",
-			"The Library or parentId to be used (as shown in the jellyfin URL).");
 		public ConfigValue<string> Hostname { get; } = new ConfigValue<string>("jellyfin_host", "",
 			"Full hostname to the Jellyfin instance, i.e. https://media.my.service");
 	}
